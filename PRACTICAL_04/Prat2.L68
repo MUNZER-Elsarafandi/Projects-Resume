@@ -1,0 +1,53 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 05/02/2025 13:26:27
+
+00000000                             1  
+00001000                             2      ORG    $1000
+00001000                             3  START:                
+00001000                             4  
+00001000                             5      ; Move Health to Memory Location $3000
+00001000  11FC 0064 3000             6      MOVE.B  #100, $3000
+00001006                             7      
+00001006                             8      ; Move Location of Player into Data Register 
+00001006                             9      ; X first Byte 0 to 15
+00001006                            10      ; Y second Byte 0 to 15
+00001006  143C 0002                 11      MOVE.B #$2, D2
+0000100A                            12      
+0000100A                            13      ; Move Location of NPC into Data Register 
+0000100A                            14      ; X first Byte 0 to 15
+0000100A                            15      ; Y second Byte 0 to 15
+0000100A  163C 0002                 16      MOVE.B #$2, D3
+0000100E                            17      
+0000100E                            18      ; Bitwise AND D2 and D3
+0000100E                            19      ; Whats new location of Player
+0000100E  C602                      20      AND.B D2, D3
+00001010                            21      
+00001010                            22      
+00001010                            23      ;Load Memory Address $3000, into
+00001010                            24      ;Address Register A1
+00001010  43F8 3000                 25      LEA     $3000, A1
+00001014                            26      
+00001014                            27      ; Hit by NPC
+00001014                            28      ;Non Player Character
+00001014  0411 0014                 29      SUB.B   #20, (A1)
+00001018                            30      
+00001018                            31      ;Pickup Health Found
+00001018  0611 000A                 32      ADD.B   #10, (A1)
+0000101C                            33      
+0000101C                            34      ; 
+0000101C                            35      
+0000101C  FFFF FFFF                 36      SIMHALT            
+00001020                            37  
+00001020                            38  
+00001020                            39  
+00001020                            40      END    START        
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+START               1000
