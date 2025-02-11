@@ -18,7 +18,7 @@ GAME_POINTS
     SUB.B   #1, D0
     BRA     GAME_LOOP
 
-GAME_OVER
+GAME_OVER 
 
     SIMHALT             ; halt simulator
 
