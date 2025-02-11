@@ -1,0 +1,50 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 11/02/2025 10:54:22
+
+00000000                             1  
+00001000                             2      ORG    $1000
+00001000                             3  START:                  ; first instruction of program
+00001000                             4  
+00001000  43F9 0000102A              5      LEA PLAYER_POSITION, A1
+00001006  45F9 0000102C              6      LEA ENEMY_POSITION, A2
+0000100C                             7      
+0000100C  123C 0032                  8      MOVE.B #50, D1
+00001010  143C 0000                  9      MOVE.B #0, D2
+00001014                            10      
+00001014                            11  COLLISION_CHECK:
+00001014  B242                      12      CMP D2, D1
+00001016  6D00 0006                 13      BLT NEXT_MOVE
+0000101A  6700 0006                 14      BEQ COLLISION
+0000101E                            15      
+0000101E                            16  NEXT_MOVE:
+0000101E  5202                      17      ADD.B #1, D2
+00001020  60F2                      18      BRA COLLISION_CHECK
+00001022                            19  
+00001022                            20  COLLISION:
+00001022  6000 0002                 21      BRA GAME_OVER
+00001026                            22  
+00001026                            23  GAME_OVER:
+00001026                            24  
+00001026  FFFF FFFF                 25      SIMHALT             ; halt simulator
+0000102A                            26  
+0000102A= 0A 0F                     27  PLAYER_POSITION: DC.B 10, 15
+0000102C= 32 37                     28  ENEMY_POSITION: DC.B 50,55
+0000102E                            29  * Put variables and constants here
+0000102E                            30  
+0000102E                            31      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+COLLISION           1022
+COLLISION_CHECK     1014
+ENEMY_POSITION      102C
+GAME_OVER           1026
+NEXT_MOVE           101E
+PLAYER_POSITION     102A
+START               1000

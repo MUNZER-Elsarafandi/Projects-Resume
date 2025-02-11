@@ -1,11 +1,12 @@
 
     ORG    $1000
 START:                  ; first instruction of program
+
     LEA PLAYER_POSITION, A1
     LEA ENEMY_POSITION, A2
     
     MOVE.B #50, D1
-    MOVE.B #0 D2
+    MOVE.B #0, D2
     
 COLLISION_CHECK:
     CMP D2, D1
