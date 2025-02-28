@@ -288,7 +288,7 @@ EXIT:
 * -------------------
 * Data Section
 * -------------------
-TITLE_MSG     DC.B  'Tiny Throne: Strategy RPG',10,13,0
+TITLE_MSG     DC.B  'Game Of Tiny Throne: Strategy RPG',10,13,0
 PROMPT_MSG    DC.B  'Actions: 1) Expand   2)Tax   3)Train  4)War   5)Trade   6)Exit',10,13,0
 INPUT_PROMPT_MSG DC.B 'Enter your choice (1-6): ',0
 WIN_MSG       DC.B  'Your kingdom thrives! Victory!',10,13,0
