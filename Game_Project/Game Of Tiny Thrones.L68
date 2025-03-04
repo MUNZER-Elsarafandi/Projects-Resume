@@ -1,6 +1,6 @@
 0000105C Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 2/28/2025 5:29:18 PM
+Created On: 04/03/2025 10:15:24
 
 00001000                             1      ORG    $1000
 00001000                             2      
@@ -17,305 +17,333 @@ Created On: 2/28/2025 5:29:18 PM
 0000105C                            13  * Main Game Loop
 0000105C                            14  * -------------------
 0000105C                            15  START:
-0000105C  43F9 00001380             16      LEA    TITLE_MSG,A1
-00001062  103C 000E                 17      MOVE.B #14,D0
-00001066  4E4F                      18      TRAP   #15
-00001068  11FC 0001 2000            19      MOVE.B #1,$2000
-0000106E                            20      
-0000106E                            21  GAME_LOOP:
-0000106E  5278 1008                 22      ADD.W  #1,TURN_COUNT
-00001072  6100 00A0                 23      BSR    DISPLAY_STATS
-00001076                            24      
-00001076  3038 1008                 25      MOVE.W TURN_COUNT,D0
-0000107A  B07C 0032                 26      CMP.W  #50,D0
-0000107E  6700 02E0                 27      BEQ    WIN_GAME
-00001082                            28      
-00001082  3038 1006                 29      MOVE.W HAPPINESS,D0
-00001086  B07C 0000                 30      CMP.W  #0,D0
-0000108A  6F00 02E2                 31      BLE    LOSE_GAME
-0000108E                            32      
-0000108E  3038 1002                 33      MOVE.W FOOD,D0
-00001092  B07C 0000                 34      CMP.W  #0,D0
-00001096  6F00 02D6                 35      BLE    LOSE_GAME
-0000109A                            36      
-0000109A  3038 1000                 37      MOVE.W GOLD,D0
-0000109E  B07C 0000                 38      CMP.W  #0,D0
-000010A2  6F00 02CA                 39      BLE    LOSE_GAME
-000010A6                            40      
-000010A6  6100 012A                 41      BSR    RANDOM_EVENT
-000010AA                            42      
-000010AA  43F9 0000139C             43      LEA    PROMPT_MSG,A1
-000010B0  6100 005A                 44      BSR    PRINT_STRING
-000010B4  6100 0040                 45      BSR    GET_INPUT
-000010B8                            46      
-000010B8  B03C 0031                 47      CMP.B  #'1',D0
-000010BC  6700 018C                 48      BEQ    EXPAND_KINGDOM
-000010C0  B03C 0032                 49      CMP.B  #'2',D0
-000010C4  6700 01AE                 50      BEQ    COLLECT_TAXES
-000010C8  B03C 0033                 51      CMP.B  #'3',D0
-000010CC  6700 01C0                 52      BEQ    TRAIN_ARMY
-000010D0  B03C 0034                 53      CMP.B  #'4',D0
-000010D4  6700 01EC                 54      BEQ    DECLARE_WAR
-000010D8  B03C 0035                 55      CMP.B  #'5',D0
-000010DC  6700 0240                 56      BEQ    TRADE_RESOURCES
-000010E0  B03C 0036                 57      CMP.B  #'6',D0
-000010E4  6700 026C                 58      BEQ    SAVE_EXIT
-000010E8                            59      
-000010E8  43F9 00001556             60      LEA    INVALID_MSG,A1
-000010EE  6100 001C                 61      BSR    PRINT_STRING
-000010F2  6000 FF7A                 62      BRA    GAME_LOOP
-000010F6                            63  
-000010F6                            64  * -------------------
-000010F6                            65  * Subroutines
-000010F6                            66  * -------------------
-000010F6                            67  GET_INPUT:
-000010F6  43F9 000013DD             68      LEA    INPUT_PROMPT_MSG,A1    ; Load the address of the input prompt message
-000010FC  103C 000E                 69      MOVE.B #14,D0                 ; Task 14: Display null-terminated string
-00001100  4E4F                      70      TRAP   #15                    ; Display the prompt
-00001102  103C 0005                 71      MOVE.B #5,D0                  ; Task 5: Read a single character into D1.B
-00001106  4E4F                      72      TRAP   #15                    ; Wait for user input, result in D1.B
-00001108  1001                      73      MOVE.B D1,D0                  ; Move the input character to D0 for comparison
-0000110A  4E75                      74      RTS                           ; Return to caller
-0000110C                            75  
-0000110C                            76  PRINT_STRING:
-0000110C  103C 000E                 77      MOVE.B #14,D0
-00001110  4E4F                      78      TRAP   #15
-00001112  4E75                      79      RTS
-00001114                            80  
-00001114                            81  DISPLAY_STATS:
-00001114  43F8 100C                 82      LEA    STATS_BUFFER,A1
-00001118  45F9 0000158D             83      LEA    TURN_LABEL,A2
-0000111E  6100 0078                 84      BSR    COPY_STRING
-00001122  3038 1008                 85      MOVE.W TURN_COUNT,D0
-00001126  6100 007C                 86      BSR    NUM_TO_STRING
-0000112A                            87      
-0000112A  12FC 0020                 88      MOVE.B #' ',(A1)+
-0000112E  45F9 00001593             89      LEA    GOLD_LABEL,A2
-00001134  6100 0062                 90      BSR    COPY_STRING
-00001138  3038 1000                 91      MOVE.W GOLD,D0
-0000113C  6100 0066                 92      BSR    NUM_TO_STRING
-00001140                            93      
-00001140  12FC 0020                 94      MOVE.B #' ',(A1)+
-00001144  45F9 00001599             95      LEA    FOOD_LABEL,A2
-0000114A  6100 004C                 96      BSR    COPY_STRING
-0000114E  3038 1002                 97      MOVE.W FOOD,D0
-00001152  6100 0050                 98      BSR    NUM_TO_STRING
-00001156                            99      
-00001156  12FC 0020                100      MOVE.B #' ',(A1)+
-0000115A  45F9 0000159F            101      LEA    ARMY_LABEL,A2
-00001160  6100 0036                102      BSR    COPY_STRING
-00001164  3038 1004                103      MOVE.W ARMY,D0
-00001168  6100 003A                104      BSR    NUM_TO_STRING
-0000116C                           105      
-0000116C  12FC 0020                106      MOVE.B #' ',(A1)+
-00001170  45F9 000015A5            107      LEA    HAPPINESS_LABEL,A2
-00001176  6100 0020                108      BSR    COPY_STRING
-0000117A  3038 1006                109      MOVE.W HAPPINESS,D0
-0000117E  6100 0024                110      BSR    NUM_TO_STRING
-00001182                           111      
-00001182  12FC 000A                112      MOVE.B #10,(A1)+
-00001186  12FC 000D                113      MOVE.B #13,(A1)+
-0000118A  12BC 0000                114      MOVE.B #0,(A1)
-0000118E  43F8 100C                115      LEA    STATS_BUFFER,A1
-00001192  6100 FF78                116      BSR    PRINT_STRING
-00001196  4E75                     117      RTS
-00001198                           118  
-00001198                           119  COPY_STRING:
-00001198  121A                     120      MOVE.B (A2)+,D1
-0000119A  6700 0006                121      BEQ    COPY_DONE
-0000119E  12C1                     122      MOVE.B D1,(A1)+
-000011A0  60F6                     123      BRA    COPY_STRING
-000011A2                           124  COPY_DONE:
-000011A2  4E75                     125      RTS
-000011A4                           126  
-000011A4                           127  NUM_TO_STRING:
-000011A4  4281                     128      CLR.L  D1
-000011A6  4282                     129      CLR.L  D2
-000011A8  3200                     130      MOVE.W D0,D1
-000011AA  6700 0020                131      BEQ    ZERO_CASE
-000011AE                           132      
-000011AE                           133  CONVERT_LOOP:
-000011AE  82FC 000A                134      DIVU   #10,D1
-000011B2  4841                     135      SWAP   D1
-000011B4  0601 0030                136      ADD.B  #'0',D1
-000011B8  1F01                     137      MOVE.B D1,-(SP)
-000011BA  4241                     138      CLR.W  D1
-000011BC  4841                     139      SWAP   D1
-000011BE  5242                     140      ADDQ   #1,D2
-000011C0  4A41                     141      TST.W  D1
-000011C2  66EA                     142      BNE    CONVERT_LOOP
-000011C4                           143      
-000011C4                           144  POP_DIGITS:
-000011C4  12DF                     145      MOVE.B (SP)+,(A1)+
-000011C6  5342                     146      SUBQ   #1,D2
-000011C8  66FA                     147      BNE    POP_DIGITS
-000011CA  4E75                     148      RTS
-000011CC                           149  
-000011CC                           150  ZERO_CASE:
-000011CC  12FC 0030                151      MOVE.B #'0',(A1)+
-000011D0  4E75                     152      RTS
-000011D2                           153  
-000011D2                           154  RANDOM_EVENT:
-000011D2  3038 100A                155      MOVE.W RANDOM_SEED,D0
-000011D6  C0FC 000D                156      MULU   #13,D0
-000011DA  5E40                     157      ADD.W  #7,D0
-000011DC  80FC 0064                158      DIVU   #100,D0
-000011E0  4840                     159      SWAP   D0
-000011E2  31C0 100A                160      MOVE.W D0,RANDOM_SEED
-000011E6                           161      
-000011E6  B07C 003C                162      CMP.W  #60,D0
-000011EA  6C00 005A                163      BGE    NO_EVENT
-000011EE                           164      
-000011EE  B07C 0028                165      CMP.W  #40,D0
-000011F2  6C00 003A                166      BGE    GOOD_DAY_EVENT
-000011F6                           167      
-000011F6  B07C 0014                168      CMP.W  #20,D0
-000011FA  6C00 001A                169      BGE    SNOWY_EVENT
-000011FE                           170      
-000011FE                           171  DROUGHT_EVENT:
-000011FE  0478 000A 1002           172      SUB.W  #10,FOOD
-00001204  5B78 1006                173      SUB.W  #5,HAPPINESS
-00001208  43F9 0000146E            174      LEA    DROUGHT_MSG,A1
-0000120E  6100 FEFC                175      BSR    PRINT_STRING
-00001212  6000 0034                176      BRA    EVENT_DONE
-00001216                           177  
-00001216                           178  SNOWY_EVENT:
-00001216  0478 000A 1006           179      SUB.W  #10,HAPPINESS
-0000121C  5B78 1004                180      SUB.W  #5,ARMY
-00001220  43F9 000014A0            181      LEA    SNOWY_MSG,A1
-00001226  6100 FEE4                182      BSR    PRINT_STRING
-0000122A  6000 001C                183      BRA    EVENT_DONE
-0000122E                           184  
-0000122E                           185  GOOD_DAY_EVENT:
-0000122E  0678 000F 1000           186      ADD.W  #15,GOLD
-00001234  5A78 1006                187      ADD.W  #5,HAPPINESS
-00001238  43F9 000014D1            188      LEA    GOOD_DAY_MSG,A1
-0000123E  6100 FECC                189      BSR    PRINT_STRING
-00001242  6000 0004                190      BRA    EVENT_DONE
-00001246                           191  
-00001246                           192  NO_EVENT:
-00001246  4E75                     193      RTS
-00001248                           194  
-00001248                           195  EVENT_DONE:
-00001248  4E75                     196      RTS
-0000124A                           197  
-0000124A                           198  EXPAND_KINGDOM:
-0000124A  3038 1000                199      MOVE.W GOLD,D0
-0000124E  B07C 0014                200      CMP.W  #20,D0
-00001252  6D00 00F0                201      BLT    INSUFFICIENT
-00001256  0478 0014 1000           202      SUB.W  #20,GOLD
-0000125C  0678 000A 1002           203      ADD.W  #10,FOOD
-00001262  5A78 1006                204      ADD.W  #5,HAPPINESS
-00001266  43F9 000014F4            205      LEA    EXPAND_MSG,A1
-0000126C  6100 FE9E                206      BSR    PRINT_STRING
-00001270  6000 FDFC                207      BRA    GAME_LOOP
-00001274                           208  
-00001274                           209  COLLECT_TAXES:
-00001274  0678 000F 1000           210      ADD.W  #15,GOLD
-0000127A  0478 000A 1006           211      SUB.W  #10,HAPPINESS
-00001280  43F9 00001508            212      LEA    TAX_MSG,A1
-00001286  6100 FE84                213      BSR    PRINT_STRING
-0000128A  6000 FDE2                214      BRA    GAME_LOOP
-0000128E                           215  
-0000128E                           216  TRAIN_ARMY:
-0000128E  3038 1000                217      MOVE.W GOLD,D0
-00001292  B07C 000A                218      CMP.W  #10,D0
-00001296  6D00 00AC                219      BLT    INSUFFICIENT
-0000129A  3038 1002                220      MOVE.W FOOD,D0
-0000129E  B07C 0005                221      CMP.W  #5,D0
-000012A2  6D00 00A0                222      BLT    INSUFFICIENT
-000012A6  0478 000A 1000           223      SUB.W  #10,GOLD
-000012AC  5B78 1002                224      SUB.W  #5,FOOD
-000012B0  5A78 1004                225      ADD.W  #5,ARMY
-000012B4  43F9 0000151B            226      LEA    TRAIN_MSG,A1
-000012BA  6100 FE50                227      BSR    PRINT_STRING
-000012BE  6000 FDAE                228      BRA    GAME_LOOP
-000012C2                           229  
-000012C2                           230  DECLARE_WAR:
-000012C2  3038 1004                231      MOVE.W ARMY,D0
-000012C6  B07C 000A                232      CMP.W  #10,D0             ; Check if enough army
-000012CA  6D00 0078                233      BLT    INSUFFICIENT
-000012CE  0478 000A 1004           234      SUB.W  #10,ARMY
-000012D4  3038 100A                235      MOVE.W RANDOM_SEED,D0
-000012D8  C0FC 0011                236      MULU   #17,D0             ; Generate new random value
-000012DC  0640 000B                237      ADD.W  #11,D0             ; Add offset for variation
-000012E0  80FC 0064                238      DIVU   #100,D0
-000012E4  4840                     239      SWAP   D0                 ; Use remainder
-000012E6  31C0 100A                240      MOVE.W D0,RANDOM_SEED     ; Update seed
-000012EA  B07C 0032                241      CMP.W  #50,D0             ; 50% chance (0-49 lose, 50-99 win)
-000012EE  6C00 0016                242      BGE    WAR_WIN
-000012F2                           243  WAR_LOSE:
-000012F2  0478 000A 1006           244      SUB.W  #10,HAPPINESS
-000012F8  43F9 00001457            245      LEA    BATTLE_LOSE,A1
-000012FE  6100 FE0C                246      BSR    PRINT_STRING
-00001302  6000 FD6A                247      BRA    GAME_LOOP
-00001306                           248  WAR_WIN:
-00001306  0678 0014 1000           249      ADD.W  #20,GOLD
-0000130C  5A78 1006                250      ADD.W  #5,HAPPINESS
-00001310  43F9 00001441            251      LEA    BATTLE_WIN,A1
-00001316  6100 FDF4                252      BSR    PRINT_STRING
-0000131A  6000 FD52                253      BRA    GAME_LOOP
-0000131E                           254  
-0000131E                           255  TRADE_RESOURCES:
-0000131E  3038 1002                256      MOVE.W FOOD,D0
-00001322  B07C 000F                257      CMP.W  #15,D0
-00001326  6D00 001C                258      BLT    INSUFFICIENT
-0000132A  0478 000F 1002           259      SUB.W  #15,FOOD
-00001330  0678 0014 1000           260      ADD.W  #20,GOLD
-00001336  43F9 0000152B            261      LEA    TRADE_MSG,A1
-0000133C  6100 FDCE                262      BSR    PRINT_STRING
-00001340  6000 FD2C                263      BRA    GAME_LOOP
-00001344                           264  
-00001344                           265  INSUFFICIENT:
-00001344  43F9 00001573            266      LEA    INSUFFICIENT_MSG,A1
-0000134A  6100 FDC0                267      BSR    PRINT_STRING
-0000134E  6000 FD1E                268      BRA    GAME_LOOP
-00001352                           269  
-00001352                           270  SAVE_EXIT:
-00001352  43F9 0000153F            271      LEA    EXIT_MSG,A1
-00001358  6100 FDB2                272      BSR    PRINT_STRING
-0000135C  6000 001E                273      BRA    EXIT
-00001360                           274  
-00001360                           275  WIN_GAME:
-00001360  43F9 000013F7            276      LEA    WIN_MSG,A1
-00001366  6100 FDA4                277      BSR    PRINT_STRING
-0000136A  6000 0010                278      BRA    EXIT
-0000136E                           279  
-0000136E                           280  LOSE_GAME:
-0000136E  43F9 00001418            281      LEA    LOSE_MSG,A1
-00001374  6100 FD96                282      BSR    PRINT_STRING
-00001378  6000 0002                283      BRA    EXIT
-0000137C                           284  
-0000137C                           285  EXIT:
-0000137C  FFFF FFFF                286      SIMHALT
-00001380                           287  
-00001380                           288  * -------------------
-00001380                           289  * Data Section
-00001380                           290  * -------------------
-00001380= 54 69 6E 79 20 54 ...    291  TITLE_MSG     DC.B  'Tiny Throne: Strategy RPG',10,13,0
-0000139C= 41 63 74 69 6F 6E ...    292  PROMPT_MSG    DC.B  'Actions: 1) Expand   2)Tax   3)Train  4)War   5)Trade   6)Exit',10,13,0
-000013DD= 45 6E 74 65 72 20 ...    293  INPUT_PROMPT_MSG DC.B 'Enter your choice (1-6): ',0
-000013F7= 59 6F 75 72 20 6B ...    294  WIN_MSG       DC.B  'Your kingdom thrives! Victory!',10,13,0
-00001418= 59 6F 75 72 20 6B ...    295  LOSE_MSG      DC.B  'Your kingdom has collapsed. Game Over.',10,13,0
-00001441= 59 6F 75 20 77 6F ...    296  BATTLE_WIN    DC.B  'You won the battle!',10,13,0
-00001457= 59 6F 75 20 6C 6F ...    297  BATTLE_LOSE   DC.B  'You lost the battle!',10,13,0
-0000146E= 41 20 64 72 6F 75 ...    298  DROUGHT_MSG   DC.B  'A drought strikes! Food and happiness decrease.',10,13,0
-000014A0= 53 6E 6F 77 79 20 ...    299  SNOWY_MSG     DC.B  'Snowy weather hits! Happiness and army suffer.',10,13,0
-000014D1= 41 20 67 6F 6F 64 ...    300  GOOD_DAY_MSG  DC.B  'A good day brings extra fortune!',10,13,0
-000014F4= 4B 69 6E 67 64 6F ...    301  EXPAND_MSG    DC.B  'Kingdom expanded!',10,13,0
-00001508= 54 61 78 65 73 20 ...    302  TAX_MSG       DC.B  'Taxes collected!',10,13,0
-0000151B= 41 72 6D 79 20 74 ...    303  TRAIN_MSG     DC.B  'Army trained!',10,13,0
-0000152B= 52 65 73 6F 75 72 ...    304  TRADE_MSG     DC.B  'Resources traded!',10,13,0
-0000153F= 47 61 6D 65 20 73 ...    305  EXIT_MSG      DC.B  'Game saved. Goodbye!',10,13,0
-00001556= 49 6E 76 61 6C 69 ...    306  INVALID_MSG   DC.B  'Invalid choice! Try again.',10,13,0
-00001573= 49 6E 73 75 66 66 ...    307  INSUFFICIENT_MSG DC.B 'Insufficient resources!',10,13,0
-0000158D= 54 75 72 6E 3A 00        308  TURN_LABEL    DC.B  'Turn:',0
-00001593= 47 6F 6C 64 3A 00        309  GOLD_LABEL    DC.B  'Gold:',0
-00001599= 46 6F 6F 64 3A 00        310  FOOD_LABEL    DC.B  'Food:',0
-0000159F= 41 72 6D 79 3A 00        311  ARMY_LABEL    DC.B  'Army:',0
-000015A5= 48 61 70 70 69 6E ...    312  HAPPINESS_LABEL DC.B 'Happiness:',0
-000015B0                           313  
-000015B0                           314      END    START
+0000105C                            16  
+0000105C  43F9 000013C7             17      LEA    TITLE_MSG,A1
+00001062  103C 000E                 18      MOVE.B #14,D0
+00001066  4E4F                      19      TRAP   #15
+00001068  11FC 0001 2000            20      MOVE.B #1,$2000
+0000106E                            21      
+0000106E                            22  GAME_LOOP:
+0000106E  5278 1008                 23      ADD.W  #1,TURN_COUNT
+00001072  6100 00A4                 24      BSR    DISPLAY_STATS
+00001076                            25      
+00001076  3038 1008                 26      MOVE.W TURN_COUNT,D0
+0000107A  B07C 0032                 27      CMP.W  #50,D0
+0000107E  6700 0304                 28      BEQ    WIN_GAME
+00001082                            29      
+00001082  3038 1006                 30      MOVE.W HAPPINESS,D0
+00001086  B07C 0000                 31      CMP.W  #0,D0
+0000108A  6F00 0306                 32      BLE    LOSE_GAME
+0000108E                            33      
+0000108E  3038 1002                 34      MOVE.W FOOD,D0
+00001092  B07C 0000                 35      CMP.W  #0,D0
+00001096  6F00 02FA                 36      BLE    LOSE_GAME
+0000109A                            37      
+0000109A  3038 1000                 38      MOVE.W GOLD,D0
+0000109E  B07C 0000                 39      CMP.W  #0,D0
+000010A2  6F00 02EE                 40      BLE    LOSE_GAME
+000010A6                            41      
+000010A6  6100 012E                 42      BSR    RANDOM_EVENT
+000010AA                            43      
+000010AA  43F9 00001486             44      LEA    PROMPT_MSG,A1
+000010B0  6100 005E                 45      BSR    PRINT_STRING
+000010B4  6100 0040                 46      BSR    GET_INPUT
+000010B8                            47      
+000010B8  B03C 0031                 48      CMP.B  #'1',D0
+000010BC  6700 0190                 49      BEQ    EXPAND_KINGDOM
+000010C0  B03C 0032                 50      CMP.B  #'2',D0
+000010C4  6700 01B6                 51      BEQ    COLLECT_TAXES
+000010C8  B03C 0033                 52      CMP.B  #'3',D0
+000010CC  6700 01CC                 53      BEQ    TRAIN_ARMY
+000010D0  B03C 0034                 54      CMP.B  #'4',D0
+000010D4  6700 01FC                 55      BEQ    DECLARE_WAR
+000010D8  B03C 0035                 56      CMP.B  #'5',D0
+000010DC  6700 025C                 57      BEQ    TRADE_RESOURCES
+000010E0  B03C 0036                 58      CMP.B  #'6',D0
+000010E4  6700 0290                 59      BEQ    SAVE_EXIT
+000010E8                            60      
+000010E8  43F9 00001667             61      LEA    INVALID_MSG,A1
+000010EE  6100 0020                 62      BSR    PRINT_STRING
+000010F2  6000 FF7A                 63      BRA    GAME_LOOP
+000010F6                            64  
+000010F6                            65  * -------------------
+000010F6                            66  * Subroutines
+000010F6                            67  * -------------------
+000010F6                            68  GET_INPUT:
+000010F6  6100 02A8                 69      BSR     EXIT
+000010FA  43F9 000014C7             70      LEA    INPUT_PROMPT_MSG,A1    ; Load the address of the input prompt message
+00001100  103C 000E                 71      MOVE.B #14,D0                 ; Task 14: Display null-terminated string
+00001104  4E4F                      72      TRAP   #15                    ; Display the prompt
+00001106  103C 0005                 73      MOVE.B #5,D0                  ; Task 5: Read a single character into D1.B
+0000110A  4E4F                      74      TRAP   #15                    ; Wait for user input, result in D1.B
+0000110C  1001                      75      MOVE.B D1,D0                  ; Move the input character to D0 for comparison
+0000110E  4E75                      76      RTS                           ; Return to caller
+00001110                            77  
+00001110                            78  PRINT_STRING:
+00001110  103C 000E                 79      MOVE.B #14,D0
+00001114  4E4F                      80      TRAP   #15
+00001116  4E75                      81      RTS
+00001118                            82  
+00001118                            83  DISPLAY_STATS:
+00001118  43F8 100C                 84      LEA    STATS_BUFFER,A1
+0000111C  45F9 0000169F             85      LEA    TURN_LABEL,A2
+00001122  6100 0078                 86      BSR    COPY_STRING
+00001126  3038 1008                 87      MOVE.W TURN_COUNT,D0
+0000112A  6100 007C                 88      BSR    NUM_TO_STRING
+0000112E                            89      
+0000112E  12FC 0020                 90      MOVE.B #' ',(A1)+
+00001132  45F9 000016A5             91      LEA    GOLD_LABEL,A2
+00001138  6100 0062                 92      BSR    COPY_STRING
+0000113C  3038 1000                 93      MOVE.W GOLD,D0
+00001140  6100 0066                 94      BSR    NUM_TO_STRING
+00001144                            95      
+00001144  12FC 0020                 96      MOVE.B #' ',(A1)+
+00001148  45F9 000016AB             97      LEA    FOOD_LABEL,A2
+0000114E  6100 004C                 98      BSR    COPY_STRING
+00001152  3038 1002                 99      MOVE.W FOOD,D0
+00001156  6100 0050                100      BSR    NUM_TO_STRING
+0000115A                           101      
+0000115A  12FC 0020                102      MOVE.B #' ',(A1)+
+0000115E  45F9 000016B1            103      LEA    ARMY_LABEL,A2
+00001164  6100 0036                104      BSR    COPY_STRING
+00001168  3038 1004                105      MOVE.W ARMY,D0
+0000116C  6100 003A                106      BSR    NUM_TO_STRING
+00001170                           107      
+00001170  12FC 0020                108      MOVE.B #' ',(A1)+
+00001174  45F9 000016B7            109      LEA    HAPPINESS_LABEL,A2
+0000117A  6100 0020                110      BSR    COPY_STRING
+0000117E  3038 1006                111      MOVE.W HAPPINESS,D0
+00001182  6100 0024                112      BSR    NUM_TO_STRING
+00001186                           113      
+00001186  12FC 000A                114      MOVE.B #10,(A1)+
+0000118A  12FC 000D                115      MOVE.B #13,(A1)+
+0000118E  12BC 0000                116      MOVE.B #0,(A1)
+00001192  43F8 100C                117      LEA    STATS_BUFFER,A1
+00001196  6100 FF78                118      BSR    PRINT_STRING
+0000119A  4E75                     119      RTS
+0000119C                           120  
+0000119C                           121  COPY_STRING:
+0000119C  121A                     122      MOVE.B (A2)+,D1
+0000119E  6700 0006                123      BEQ    COPY_DONE
+000011A2  12C1                     124      MOVE.B D1,(A1)+
+000011A4  60F6                     125      BRA    COPY_STRING
+000011A6                           126  COPY_DONE:
+000011A6  4E75                     127      RTS
+000011A8                           128  
+000011A8                           129  NUM_TO_STRING:
+000011A8  4281                     130      CLR.L  D1
+000011AA  4282                     131      CLR.L  D2
+000011AC  3200                     132      MOVE.W D0,D1
+000011AE  6700 0020                133      BEQ    ZERO_CASE
+000011B2                           134      
+000011B2                           135  CONVERT_LOOP:
+000011B2  82FC 000A                136      DIVU   #10,D1
+000011B6  4841                     137      SWAP   D1
+000011B8  0601 0030                138      ADD.B  #'0',D1
+000011BC  1F01                     139      MOVE.B D1,-(SP)
+000011BE  4241                     140      CLR.W  D1
+000011C0  4841                     141      SWAP   D1
+000011C2  5242                     142      ADDQ   #1,D2
+000011C4  4A41                     143      TST.W  D1
+000011C6  66EA                     144      BNE    CONVERT_LOOP
+000011C8                           145      
+000011C8                           146  POP_DIGITS:
+000011C8  12DF                     147      MOVE.B (SP)+,(A1)+
+000011CA  5342                     148      SUBQ   #1,D2
+000011CC  66FA                     149      BNE    POP_DIGITS
+000011CE  4E75                     150      RTS
+000011D0                           151  
+000011D0                           152  ZERO_CASE:
+000011D0  12FC 0030                153      MOVE.B #'0',(A1)+
+000011D4  4E75                     154      RTS
+000011D6                           155  
+000011D6                           156  RANDOM_EVENT:
+000011D6  3038 100A                157      MOVE.W RANDOM_SEED,D0
+000011DA  C0FC 000D                158      MULU   #13,D0
+000011DE  5E40                     159      ADD.W  #7,D0
+000011E0  80FC 0064                160      DIVU   #100,D0
+000011E4  4840                     161      SWAP   D0
+000011E6  31C0 100A                162      MOVE.W D0,RANDOM_SEED
+000011EA                           163      
+000011EA  B07C 003C                164      CMP.W  #60,D0
+000011EE  6C00 005A                165      BGE    NO_EVENT
+000011F2                           166      
+000011F2  B07C 0028                167      CMP.W  #40,D0
+000011F6  6C00 003A                168      BGE    GOOD_DAY_EVENT
+000011FA                           169      
+000011FA  B07C 0014                170      CMP.W  #20,D0
+000011FE  6C00 001A                171      BGE    SNOWY_EVENT
+00001202                           172      
+00001202                           173  DROUGHT_EVENT:
+00001202  0478 000A 1002           174      SUB.W  #10,FOOD
+00001208  5B78 1006                175      SUB.W  #5,HAPPINESS
+0000120C  43F9 0000155E            176      LEA    DROUGHT_MSG,A1
+00001212  6100 FEFC                177      BSR    PRINT_STRING
+00001216  6000 0034                178      BRA    EVENT_DONE
+0000121A                           179  
+0000121A                           180  SNOWY_EVENT:
+0000121A  0478 000A 1006           181      SUB.W  #10,HAPPINESS
+00001220  5B78 1004                182      SUB.W  #5,ARMY
+00001224  43F9 0000159B            183      LEA    SNOWY_MSG,A1
+0000122A  6100 FEE4                184      BSR    PRINT_STRING
+0000122E  6000 001C                185      BRA    EVENT_DONE
+00001232                           186  
+00001232                           187  GOOD_DAY_EVENT:
+00001232  0678 000F 1000           188      ADD.W  #15,GOLD
+00001238  5A78 1006                189      ADD.W  #5,HAPPINESS
+0000123C  43F9 000015D7            190      LEA    GOOD_DAY_MSG,A1
+00001242  6100 FECC                191      BSR    PRINT_STRING
+00001246  6000 0004                192      BRA    EVENT_DONE
+0000124A                           193  
+0000124A                           194  NO_EVENT:
+0000124A  4E75                     195      RTS
+0000124C                           196  
+0000124C                           197  EVENT_DONE:
+0000124C  4E75                     198      RTS
+0000124E                           199  
+0000124E                           200  EXPAND_KINGDOM:
+0000124E  6100 0150                201      BSR    EXIT
+00001252  3038 1000                202      MOVE.W GOLD,D0
+00001256  B07C 0014                203      CMP.W  #20,D0
+0000125A  6D00 0108                204      BLT    INSUFFICIENT
+0000125E  0478 0014 1000           205      SUB.W  #20,GOLD
+00001264  0678 000A 1002           206      ADD.W  #10,FOOD
+0000126A  5A78 1006                207      ADD.W  #5,HAPPINESS
+0000126E  43F9 00001605            208      LEA    EXPAND_MSG,A1
+00001274  6100 FE9A                209      BSR    PRINT_STRING
+00001278  6000 FDF4                210      BRA    GAME_LOOP
+0000127C                           211  
+0000127C                           212  COLLECT_TAXES:
+0000127C  6100 0122                213      BSR    EXIT
+00001280  0678 000F 1000           214      ADD.W  #15,GOLD
+00001286  0478 000A 1006           215      SUB.W  #10,HAPPINESS
+0000128C  43F9 00001619            216      LEA    TAX_MSG,A1
+00001292  6100 FE7C                217      BSR    PRINT_STRING
+00001296  6000 FDD6                218      BRA    GAME_LOOP
+0000129A                           219  
+0000129A                           220  TRAIN_ARMY:
+0000129A  6100 0104                221      BSR    EXIT
+0000129E  3038 1000                222      MOVE.W GOLD,D0
+000012A2  B07C 000A                223      CMP.W  #10,D0
+000012A6  6D00 00BC                224      BLT    INSUFFICIENT
+000012AA  3038 1002                225      MOVE.W FOOD,D0
+000012AE  B07C 0005                226      CMP.W  #5,D0
+000012B2  6D00 00B0                227      BLT    INSUFFICIENT
+000012B6  0478 000A 1000           228      SUB.W  #10,GOLD
+000012BC  5B78 1002                229      SUB.W  #5,FOOD
+000012C0  5A78 1004                230      ADD.W  #5,ARMY
+000012C4  43F9 0000162C            231      LEA    TRAIN_MSG,A1
+000012CA  6100 FE44                232      BSR    PRINT_STRING
+000012CE  6000 FD9E                233      BRA    GAME_LOOP
+000012D2                           234  
+000012D2                           235  DECLARE_WAR:
+000012D2  6100 00CC                236      BSR    EXIT
+000012D6  3038 1004                237      MOVE.W ARMY,D0
+000012DA  B07C 000A                238      CMP.W  #10,D0             ; Check if enough army
+000012DE  6D00 0084                239      BLT    INSUFFICIENT
+000012E2  0478 000A 1004           240      SUB.W  #10,ARMY
+000012E8  3038 100A                241      MOVE.W RANDOM_SEED,D0
+000012EC  C0FC 0011                242      MULU   #17,D0             ; Generate new random value
+000012F0  0640 000B                243      ADD.W  #11,D0             ; Add offset for variation
+000012F4  80FC 0064                244      DIVU   #100,D0
+000012F8  4840                     245      SWAP   D0                 ; Use remainder
+000012FA  31C0 100A                246      MOVE.W D0,RANDOM_SEED     ; Update seed
+000012FE  B07C 0032                247      CMP.W  #50,D0             ; 50% chance (0-49 lose, 50-99 win)
+00001302  6C00 001A                248      BGE    WAR_WIN
+00001306                           249  WAR_LOSE:
+00001306  6100 0098                250      BSR    EXIT
+0000130A  0478 000A 1006           251      SUB.W  #10,HAPPINESS
+00001310  43F9 00001546            252      LEA    BATTLE_LOSE,A1
+00001316  6100 FDF8                253      BSR    PRINT_STRING
+0000131A  6000 FD52                254      BRA    GAME_LOOP
+0000131E                           255  WAR_WIN:
+0000131E  6100 0080                256      BSR    EXIT
+00001322  0678 0014 1000           257      ADD.W  #20,GOLD
+00001328  5A78 1006                258      ADD.W  #5,HAPPINESS
+0000132C  43F9 0000152F            259      LEA    BATTLE_WIN,A1
+00001332  6100 FDDC                260      BSR    PRINT_STRING
+00001336  6000 FD36                261      BRA    GAME_LOOP
+0000133A                           262  
+0000133A                           263  TRADE_RESOURCES:
+0000133A  6100 0064                264      BSR    EXIT
+0000133E  3038 1002                265      MOVE.W FOOD,D0
+00001342  B07C 000F                266      CMP.W  #15,D0
+00001346  6D00 001C                267      BLT    INSUFFICIENT
+0000134A  0478 000F 1002           268      SUB.W  #15,FOOD
+00001350  0678 0014 1000           269      ADD.W  #20,GOLD
+00001356  43F9 0000163C            270      LEA    TRADE_MSG,A1
+0000135C  6100 FDB2                271      BSR    PRINT_STRING
+00001360  6000 FD0C                272      BRA    GAME_LOOP
+00001364                           273  
+00001364                           274  INSUFFICIENT:
+00001364  6100 003A                275      BSR    EXIT
+00001368  43F9 00001684            276      LEA    INSUFFICIENT_MSG,A1
+0000136E  6100 FDA0                277      BSR    PRINT_STRING
+00001372  6000 FCFA                278      BRA    GAME_LOOP
+00001376                           279  
+00001376                           280  SAVE_EXIT:
+00001376  43F9 00001650            281      LEA    EXIT_MSG,A1
+0000137C  6100 FD92                282      BSR    PRINT_STRING
+00001380  6000 001E                283      BRA    EXIT
+00001384                           284  
+00001384                           285  WIN_GAME:
+00001384  43F9 000014E3            286      LEA    WIN_MSG,A1
+0000138A  6100 FD84                287      BSR    PRINT_STRING
+0000138E  6000 0010                288      BRA    EXIT
+00001392                           289  
+00001392                           290  LOSE_GAME:
+00001392  43F9 00001505            291      LEA    LOSE_MSG,A1
+00001398  6100 FD76                292      BSR    PRINT_STRING
+0000139C  6000 0002                293      BRA    EXIT
+000013A0                           294  
+000013A0                           295  EXIT:
+000013A0  48E7 8040                296      MOVEM.L D0/A1,-(A7)     ;SAVE D0 AND A1
+000013A4  303C 000E                297      MOVE    #14,D0          ;MOVE LITERAL 14 TO DO
+000013A8  43F9 000013C4            298      LEA     CRLF,A1         ;ASSIGN CRLF TO ADDRESS REGISTER A1
+000013AE  4E4F                     299      TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
+000013B0  4CDF 0201                300      MOVEM.L (A7)+,D0/A1     ;RESTORE D0 AND A1
+000013B4  43F9 0000146B            301      LEA     LINE_BREAKS,A1
+000013BA  6100 FD54                302      BSR     PRINT_STRING
+000013BE  4E75                     303      RTS                     ;RETURN FROM ENDL: SUBROUTINE
+000013C0                           304  
+000013C0  FFFF FFFF                305      SIMHALT
+000013C4                           306  
+000013C4                           307  * -------------------
+000013C4                           308  * Data Section
+000013C4                           309  * -------------------
+000013C4= 0D 0A 00                 310  CRLF:         DC.B   $0D,$0A,0
+000013C7= 2A 2A 2A 2A 2A 2A ...    311  TITLE_MSG     DC.B  '************************************************************'
+00001403= 0D 0A                    312                DC.B   $0D,$0A
+00001405= 20 47 61 6D 65 20 ...    313                DC.B  ' Game Of Tiny Throne: Strategy RPG',10,13,0
+0000142A= 0D 0A                    314                DC.B    $0D,$0A
+0000142C= 2A 2A 2A 2A 2A 2A ...    315                DC.B  '************************************************************'
+00001468= 0D 0A 00                 316                DC.B   $0D,$0A,0
+0000146B                           317                
+0000146B= 2A 2A 2A 2A 2A 2A ...    318  LINE_BREAKS   DC.B  '************************',10,13,0
+00001486                           319  
+00001486= 41 63 74 69 6F 6E ...    320  PROMPT_MSG    DC.B  'Actions: 1) Expand   2)Tax   3)Train  4)War   5)Trade   6)Exit',10,13,0
+000014C7= 45 6E 74 65 72 20 ...    321  INPUT_PROMPT_MSG DC.B 'Enter your choice (1-6): ',10,13,0
+000014E3= 20 59 6F 75 72 20 ...    322  WIN_MSG       DC.B  ' Your kingdom thrives! Victory!',10,13,0
+00001505= 20 59 6F 75 72 20 ...    323  LOSE_MSG      DC.B  ' Your kingdom has collapsed. Game Over.',10,13,0
+0000152F= 20 59 6F 75 20 77 ...    324  BATTLE_WIN    DC.B  ' You won the battle!',10,13,0
+00001546= 20 59 6F 75 20 6C ...    325  BATTLE_LOSE   DC.B  ' You lost the battle!',10,13,0
+0000155E= 20 2A 2A 2A 2A 20 ...    326  DROUGHT_MSG   DC.B  ' **** A drought strikes! Food and happiness decrease. ****',10,13,0
+0000159B= 20 2A 2A 2A 2A 20 ...    327  SNOWY_MSG     DC.B  ' **** Snowy weather hits! Happiness and army suffer. ****',10,13,0
+000015D7= 20 2A 2A 2A 2A 20 ...    328  GOOD_DAY_MSG  DC.B  ' **** A good day brings extra fortune! ****',10,13,0
+00001605= 4B 69 6E 67 64 6F ...    329  EXPAND_MSG    DC.B  'Kingdom expanded!',10,13,0
+00001619= 54 61 78 65 73 20 ...    330  TAX_MSG       DC.B  'Taxes collected!',10,13,0
+0000162C= 41 72 6D 79 20 74 ...    331  TRAIN_MSG     DC.B  'Army trained!',10,13,0
+0000163C= 52 65 73 6F 75 72 ...    332  TRADE_MSG     DC.B  'Resources traded!',10,13,0
+00001650= 47 61 6D 65 20 73 ...    333  EXIT_MSG      DC.B  'Game saved. Goodbye!',10,13,0
+00001667= 49 6E 76 61 6C 69 ...    334  INVALID_MSG   DC.B  'Invalid choice! Try again.',10,13,0
+00001684= 20 49 6E 73 75 66 ...    335  INSUFFICIENT_MSG DC.B ' Insufficient resources!',10,13,0
+0000169F= 54 75 72 6E 3A 00        336  TURN_LABEL    DC.B  'Turn:',0
+000016A5= 47 6F 6C 64 3A 00        337  GOLD_LABEL    DC.B  'Gold:',0
+000016AB= 46 6F 6F 64 3A 00        338  FOOD_LABEL    DC.B  'Food:',0
+000016B1= 41 72 6D 79 3A 00        339  ARMY_LABEL    DC.B  'Army:',0
+000016B7= 48 61 70 70 69 6E ...    340  HAPPINESS_LABEL DC.B 'Happiness:',0
+000016C2                           341  
+000016C2                           342      END    START
 
 No errors detected
 No warnings generated
@@ -325,61 +353,63 @@ SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
 ARMY                1004
-ARMY_LABEL          159F
-BATTLE_LOSE         1457
-BATTLE_WIN          1441
-COLLECT_TAXES       1274
-CONVERT_LOOP        11AE
-COPY_DONE           11A2
-COPY_STRING         1198
+ARMY_LABEL          16B1
+BATTLE_LOSE         1546
+BATTLE_WIN          152F
+COLLECT_TAXES       127C
+CONVERT_LOOP        11B2
+COPY_DONE           11A6
+COPY_STRING         119C
+CRLF                13C4
 DATA_SECTION        1000
-DECLARE_WAR         12C2
-DISPLAY_STATS       1114
-DROUGHT_EVENT       11FE
-DROUGHT_MSG         146E
-EVENT_DONE          1248
-EXIT                137C
-EXIT_MSG            153F
-EXPAND_KINGDOM      124A
-EXPAND_MSG          14F4
+DECLARE_WAR         12D2
+DISPLAY_STATS       1118
+DROUGHT_EVENT       1202
+DROUGHT_MSG         155E
+EVENT_DONE          124C
+EXIT                13A0
+EXIT_MSG            1650
+EXPAND_KINGDOM      124E
+EXPAND_MSG          1605
 FOOD                1002
-FOOD_LABEL          1599
+FOOD_LABEL          16AB
 GAME_LOOP           106E
 GET_INPUT           10F6
 GOLD                1000
-GOLD_LABEL          1593
-GOOD_DAY_EVENT      122E
-GOOD_DAY_MSG        14D1
+GOLD_LABEL          16A5
+GOOD_DAY_EVENT      1232
+GOOD_DAY_MSG        15D7
 HAPPINESS           1006
-HAPPINESS_LABEL     15A5
-INPUT_PROMPT_MSG    13DD
-INSUFFICIENT        1344
-INSUFFICIENT_MSG    1573
-INVALID_MSG         1556
-LOSE_GAME           136E
-LOSE_MSG            1418
-NO_EVENT            1246
-NUM_TO_STRING       11A4
-POP_DIGITS          11C4
-PRINT_STRING        110C
-PROMPT_MSG          139C
-RANDOM_EVENT        11D2
+HAPPINESS_LABEL     16B7
+INPUT_PROMPT_MSG    14C7
+INSUFFICIENT        1364
+INSUFFICIENT_MSG    1684
+INVALID_MSG         1667
+LINE_BREAKS         146B
+LOSE_GAME           1392
+LOSE_MSG            1505
+NO_EVENT            124A
+NUM_TO_STRING       11A8
+POP_DIGITS          11C8
+PRINT_STRING        1110
+PROMPT_MSG          1486
+RANDOM_EVENT        11D6
 RANDOM_SEED         100A
-SAVE_EXIT           1352
-SNOWY_EVENT         1216
-SNOWY_MSG           14A0
+SAVE_EXIT           1376
+SNOWY_EVENT         121A
+SNOWY_MSG           159B
 START               105C
 STATS_BUFFER        100C
-TAX_MSG             1508
-TITLE_MSG           1380
-TRADE_MSG           152B
-TRADE_RESOURCES     131E
-TRAIN_ARMY          128E
-TRAIN_MSG           151B
+TAX_MSG             1619
+TITLE_MSG           13C7
+TRADE_MSG           163C
+TRADE_RESOURCES     133A
+TRAIN_ARMY          129A
+TRAIN_MSG           162C
 TURN_COUNT          1008
-TURN_LABEL          158D
-WAR_LOSE            12F2
-WAR_WIN             1306
-WIN_GAME            1360
-WIN_MSG             13F7
-ZERO_CASE           11CC
+TURN_LABEL          169F
+WAR_LOSE            1306
+WAR_WIN             131E
+WIN_GAME            1384
+WIN_MSG             14E3
+ZERO_CASE           11D0

@@ -13,6 +13,7 @@ STATS_BUFFER  DS.B  80
 * Main Game Loop
 * -------------------
 START:
+
     LEA    TITLE_MSG,A1
     MOVE.B #14,D0
     TRAP   #15
@@ -65,6 +66,7 @@ GAME_LOOP:
 * Subroutines
 * -------------------
 GET_INPUT:
+    BSR     EXIT
     LEA    INPUT_PROMPT_MSG,A1    ; Load the address of the input prompt message
     MOVE.B #14,D0                 ; Task 14: Display null-terminated string
     TRAP   #15                    ; Display the prompt
@@ -196,6 +198,7 @@ EVENT_DONE:
     RTS
 
 EXPAND_KINGDOM:
+    BSR    EXIT
     MOVE.W GOLD,D0
     CMP.W  #20,D0
     BLT    INSUFFICIENT
@@ -207,6 +210,7 @@ EXPAND_KINGDOM:
     BRA    GAME_LOOP
 
 COLLECT_TAXES:
+    BSR    EXIT
     ADD.W  #15,GOLD
     SUB.W  #10,HAPPINESS
     LEA    TAX_MSG,A1
@@ -214,6 +218,7 @@ COLLECT_TAXES:
     BRA    GAME_LOOP
 
 TRAIN_ARMY:
+    BSR    EXIT
     MOVE.W GOLD,D0
     CMP.W  #10,D0
     BLT    INSUFFICIENT
@@ -228,6 +233,7 @@ TRAIN_ARMY:
     BRA    GAME_LOOP
 
 DECLARE_WAR:
+    BSR    EXIT
     MOVE.W ARMY,D0
     CMP.W  #10,D0             ; Check if enough army
     BLT    INSUFFICIENT
@@ -241,11 +247,13 @@ DECLARE_WAR:
     CMP.W  #50,D0             ; 50% chance (0-49 lose, 50-99 win)
     BGE    WAR_WIN
 WAR_LOSE:
+    BSR    EXIT
     SUB.W  #10,HAPPINESS
     LEA    BATTLE_LOSE,A1
     BSR    PRINT_STRING
     BRA    GAME_LOOP
 WAR_WIN:
+    BSR    EXIT
     ADD.W  #20,GOLD
     ADD.W  #5,HAPPINESS
     LEA    BATTLE_WIN,A1
@@ -253,6 +261,7 @@ WAR_WIN:
     BRA    GAME_LOOP
 
 TRADE_RESOURCES:
+    BSR    EXIT
     MOVE.W FOOD,D0
     CMP.W  #15,D0
     BLT    INSUFFICIENT
@@ -263,6 +272,7 @@ TRADE_RESOURCES:
     BRA    GAME_LOOP
 
 INSUFFICIENT:
+    BSR    EXIT
     LEA    INSUFFICIENT_MSG,A1
     BSR    PRINT_STRING
     BRA    GAME_LOOP
@@ -283,28 +293,46 @@ LOSE_GAME:
     BRA    EXIT
 
 EXIT:
+    MOVEM.L D0/A1,-(A7)     ;SAVE D0 AND A1
+    MOVE    #14,D0          ;MOVE LITERAL 14 TO DO
+    LEA     CRLF,A1         ;ASSIGN CRLF TO ADDRESS REGISTER A1
+    TRAP    #15             ;TRAP AND INTERPRET VALUE IN D0
+    MOVEM.L (A7)+,D0/A1     ;RESTORE D0 AND A1
+    LEA     LINE_BREAKS,A1
+    BSR     PRINT_STRING
+    RTS                     ;RETURN FROM ENDL: SUBROUTINE
+
     SIMHALT
 
 * -------------------
 * Data Section
 * -------------------
-TITLE_MSG     DC.B  'Game Of Tiny Throne: Strategy RPG',10,13,0
+CRLF:         DC.B   $0D,$0A,0
+TITLE_MSG     DC.B  '************************************************************'
+              DC.B   $0D,$0A
+              DC.B  ' Game Of Tiny Throne: Strategy RPG',10,13,0
+              DC.B    $0D,$0A
+              DC.B  '************************************************************'
+              DC.B   $0D,$0A,0
+              
+LINE_BREAKS   DC.B  '************************',10,13,0
+
 PROMPT_MSG    DC.B  'Actions: 1) Expand   2)Tax   3)Train  4)War   5)Trade   6)Exit',10,13,0
-INPUT_PROMPT_MSG DC.B 'Enter your choice (1-6): ',0
-WIN_MSG       DC.B  'Your kingdom thrives! Victory!',10,13,0
-LOSE_MSG      DC.B  'Your kingdom has collapsed. Game Over.',10,13,0
-BATTLE_WIN    DC.B  'You won the battle!',10,13,0
-BATTLE_LOSE   DC.B  'You lost the battle!',10,13,0
-DROUGHT_MSG   DC.B  'A drought strikes! Food and happiness decrease.',10,13,0
-SNOWY_MSG     DC.B  'Snowy weather hits! Happiness and army suffer.',10,13,0
-GOOD_DAY_MSG  DC.B  'A good day brings extra fortune!',10,13,0
+INPUT_PROMPT_MSG DC.B 'Enter your choice (1-6): ',10,13,0
+WIN_MSG       DC.B  ' Your kingdom thrives! Victory!',10,13,0
+LOSE_MSG      DC.B  ' Your kingdom has collapsed. Game Over.',10,13,0
+BATTLE_WIN    DC.B  ' You won the battle!',10,13,0
+BATTLE_LOSE   DC.B  ' You lost the battle!',10,13,0
+DROUGHT_MSG   DC.B  ' **** A drought strikes! Food and happiness decrease. ****',10,13,0
+SNOWY_MSG     DC.B  ' **** Snowy weather hits! Happiness and army suffer. ****',10,13,0
+GOOD_DAY_MSG  DC.B  ' **** A good day brings extra fortune! ****',10,13,0
 EXPAND_MSG    DC.B  'Kingdom expanded!',10,13,0
 TAX_MSG       DC.B  'Taxes collected!',10,13,0
 TRAIN_MSG     DC.B  'Army trained!',10,13,0
 TRADE_MSG     DC.B  'Resources traded!',10,13,0
 EXIT_MSG      DC.B  'Game saved. Goodbye!',10,13,0
 INVALID_MSG   DC.B  'Invalid choice! Try again.',10,13,0
-INSUFFICIENT_MSG DC.B 'Insufficient resources!',10,13,0
+INSUFFICIENT_MSG DC.B ' Insufficient resources!',10,13,0
 TURN_LABEL    DC.B  'Turn:',0
 GOLD_LABEL    DC.B  'Gold:',0
 FOOD_LABEL    DC.B  'Food:',0
@@ -312,6 +340,7 @@ ARMY_LABEL    DC.B  'Army:',0
 HAPPINESS_LABEL DC.B 'Happiness:',0
 
     END    START
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
