@@ -1,0 +1,51 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 3/12/2025 4:34:45 AM
+
+00000000                             1  
+00001000                             2      ORG    $1000
+00001000                             3      
+00001000                             4  START:   
+00001000                             5  
+00001000  2F3C 0000103C              6      MOVE.L #HEALTH, -(SP)
+00001006  4EB9 00001014              7      JSR GAME_LOOP
+0000100C  6100 0010                  8      BSR HEADS_UP_DISPLAY
+00001010  6000 0026                  9      BRA END
+00001014                            10  
+00001014                            11  GAME_LOOP:
+00001014                            12  
+00001014  226F 0004                 13      MOVEA.L 4(SP), A1
+00001018  0411 000A                 14      SUB.B #10, (A1)
+0000101C  4E75                      15      RTS
+0000101E                            16  
+0000101E                            17  HEADS_UP_DISPLAY:
+0000101E                            18  
+0000101E  43F9 0000103D             19      LEA MESSAGE, A1
+00001024  103C 000E                 20      MOVE.B #14, D0
+00001028  4E4F                      21      TRAP #15
+0000102A  1239 0000103C             22      MOVE.B HEALTH, D1
+00001030  103C 0003                 23      MOVE.B #3, D0
+00001034  4E4F                      24      TRAP #15
+00001036  4E75                      25      RTS
+00001038                            26  END:   
+00001038  FFFF FFFF                 27      SIMHALT           
+0000103C= 64                        28  HEALTH: DC.B 100
+0000103D                            29  
+0000103D= 48 65 61 6C 74 68 ...     30  MESSAGE: DC.B 'Health:', 0
+00001045                            31  
+00001045                            32  
+00001045                            33      END    START       
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+END                 1038
+GAME_LOOP           1014
+HEADS_UP_DISPLAY    101E
+HEALTH              103C
+MESSAGE             103D
+START               1000
