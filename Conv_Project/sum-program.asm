@@ -1,3 +1,12 @@
+; ================================================================
+; Author: Munzer Elsarafandi
+; Project: II
+; Purpose: 
+;   - Accepts 2 numbers per round for 3 rounds
+;   - Calculates running sum
+;   - Displays intermediate and final results
+; Date: [04/27/2025]
+; ================================================================
 section .data
     prompt db "Enter number: ", 0
     prompt_len equ $ - prompt
