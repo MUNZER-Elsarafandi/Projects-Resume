@@ -1,57 +1,58 @@
-Heyy, Let’s Talk About My 68000 to x86_64 Assembly Project!
-So, What’s This Project Anyway?
-Hiii! I’m Munzer Elsarafandi, a Year 2 student studying Software Development and Cyber Security at SETU Carlow, and this is my Project II for our "Assembly and C Module." I had to take this 68000 assembly program and turn it into x86_64 assembly, and oh my gosh, it’s been a total adventure (and a bit of a headache, haha)! My program’s called sum-program, and it’s supposed to ask you for 2 numbers each round, do that for 3 rounds, keep a running total, and then show you the sums along the way and the final result at the end. I also had to make sure it’s secure—like, no stack messes or buffer overflow stuff—and make sure it stops after exactly 3 rounds, which… well, I’m still working on that part!
-How I Made It Happen (Or Tried To, Haha)
-The 68000 code felt like a little brain teaser I had to solve in x86_64. Here’s how I went about it:
+Hiii, Let’s Chat About My 68000 to x86_64 Assembly Project!
+So, What’s This Thing All About?
+Heyy! I’m Munzer Elsarafandi, a Year 2 student at SETU Carlow studying Software Development and Cyber Security, and this is my Project II for our "Assembly and C Module." I had to take this 68000 assembly program and turn it into x86_64 assembly, and oh my gosh, it was such a journey! My program’s called sum-program.asm, and it’s supposed to ask you for 2 numbers each round, do that for 3 rounds, handle positive, negative, and zero values, keep a running total, and show you the sums along the way and the final result at the end. I also had to make sure it’s secure—like, no stack messes or buffer overflow stuff—and I’m so proud of how it turned out!
+How I Got It All Working (It Was a Ride!)
+The 68000 code was like a little puzzle I had to solve in x86_64, and here’s how I did it:
 
-Playing with Registers:So, in the 68000 code, they used D1 and D2 to send numbers to this thing called REGISTER_ADDER. I figured out that in x86_64, I should use rdi and rsi for that, because that’s how you pass stuff around (I learned about this System V ABI calling convention thing, which was pretty cool!). The result goes into rax, kind of like how D1 gets updated in the original. The running total was in D3, so I picked rbx for that, and for the loop counter (which was D4 in 68000), I’m using rcx right now… but I think that’s causing some drama, and I’ll tell you more about that in a sec!
+Playing with Registers:In the 68000 code, they used D1 and D2 to pass numbers to a subroutine called REGISTER_ADDER. I learned that in x86_64, you use rdi and rsi for that (thanks to this thing called the System V ABI calling convention—I felt so smart figuring that out!). The result goes into rax, just like how D1 gets updated in the original. The running total was in D3, so I used rbx for that, and for the loop counter (which was D4 in 68000), I picked r12 because I had some register conflicts before, and I’ll tell you more about that soon!
 
-Showing Stuff and Getting Input:In the 68000 code, they used TRAP #15 to print messages and get input—like MOVE.B #14, D0 to show a prompt and MOVE.B #4, D0 to grab a number. For x86_64, I switched to Linux syscalls: I use write (with rax set to 1) to print messages, and read (with rax set to 0) to get your input. Oh, and the 68000’s SIMHALT to stop the program? I turned that into an exit syscall (rax = 60) in x86_64.
+Showing Stuff and Getting Your Input:The 68000 code used TRAP #15 to print messages and get input—like MOVE.B #14, D0 to show a prompt and MOVE.B #4, D0 to grab a number. In x86_64, I used Linux syscalls instead: write (with rax set to 1) to print messages, and read (with rax set to 0) to get what you type. Oh, and the 68000’s SIMHALT to stop the program? I turned that into an exit syscall (rax = 60) in x86_64.
 
-Trying to Loop 3 Times:The 68000 code set a counter to 3 (MOVE.W #3, D4), took away 1 each round (SUBQ.W #1, D4), and kept looping if it wasn’t zero (BNE GAME_LOOP). I tried to do the same thing in x86_64 with mov rcx, 3, dec rcx, and jnz game_loop, but oh boy, it’s not working the way I want it to, and I’ll spill the beans on that below!
-
-
-Stuff I’ve Been Struggling With
-Okay, let me tell you about the wild ride I’ve been on with this project:
-
-Ugh, Why Won’t It Assemble?So, I tried to assemble my program with nasm -f elf64 sum-program.asm -o sum-program.o, but I got this super annoying error: sum-program.asm:1: error: parser: instruction expected. The first line is literally just a comment (; ================================================================), so I was like, “Huh?!” I’m pretty sure there’s some sneaky invisible character or a file encoding thing—like maybe a byte order mark (BOM)—messing it up. I’m gonna recreate the file using nano to make sure it’s all clean, because the code looks fine to me. This stopped me from running the latest version, but I did manage to run an earlier one to see what’s going on with the program.
-
-The Loop Is Driving Me Nuts, and It’s Skipping Stuff!Oh my gosh, this loop thing has been the hardest part by far! The program is supposed to stop after 3 rounds, but it just keeps going for a 4th round, and it’s not even doing the rounds right! When I ran it, it said “Enter number:”, but then it jumped straight to “The sum is:” without showing “num1: X” or even asking for the second number—I had to stop it with Ctrl+C because it was acting so weird. I’m pretty sure it’s because I’m using rcx as my loop counter, but rcx is also getting used in my atoi and print_number functions, which is probably messing everything up. I think I need to switch to a different register, like r15, so it doesn’t get all confused, and maybe add a little safety check like cmp r15, 0; jle exit_loop to make sure it stops after 3 rounds. I’m also wondering if the terminal or input buffering is messing with me, because the flow is just… off. I’m still trying to figure this out!
-
-Keeping It Safe—Fixing Stack Stuff and Buffer Overflows:Even though the loop is being a pain, I made sure to tackle the security stuff, because that’s super important! The 68000 code was kind of a mess—it didn’t check user input at all, which is a huge no-no. The project spec even showed someone typing a crazy long string that could cause a buffer overflow, which might let someone mess with the memory and do bad stuff. So, in my atoi function (that’s the part that turns your typed string into a number), I added some safety nets:
-
-I made sure the input isn’t longer than my buffer (16 bytes) with cmp rcx, buffer_len; jae atoi_error, and I also capped it at 10 digits (cmp rcx, 10; jae atoi_error) so it doesn’t get out of hand and cause an overflow.
-I checked that every character is actually a digit (cmp rdx, '0'; jb atoi_error and cmp rdx, '9'; ja atoi_error) so if you type something silly like abc, it won’t freak out.
-If the input is weird, I print “Invalid input! Using 0.” and just use 0 so the program doesn’t crash.For the stack, I tried to be careful too. My register_adder function uses registers (rdi and rsi) to pass numbers, so I’m not touching the stack there, which is great for avoiding stack-based problems. But I do use push rcx and pop rcx when I’m clearing the buffer, and push rax and pop rax in atoi when I print an error message. Those are balanced, so they’re okay, but now that I think about it, using rcx for both the loop counter and buffer clearing might be causing some of my loop issues—not just with the loop, but it’s also not the safest way to handle the stack. I’m thinking I should change the buffer clearing to not use the stack at all, maybe with rep stosb and a different register.
+Looping 3 Times:The 68000 code set a counter to 3 (MOVE.W #3, D4), took away 1 each round (SUBQ.W #1, D4), and kept looping if it wasn’t zero (BNE GAME_LOOP). I did the same in x86_64 with mov r12, 3, dec r12, and jnz game_loop. I had some trouble with this loop before, but I fixed it—more on that below!
 
 
-Trying to Make It Run Smoothly:I wanted to be smart about how I used registers. I picked rbx to hold the running sum so I wouldn’t have to keep moving it around, but I really need to fix the rcx mess with the loop counter. The register_adder function is nice and tiny (mov rax, rdi; add rax, rsi; ret)—just like the 68000 version—so it’s pretty fast. I also tried not to use any extra syscalls I didn’t need, to keep things nice and efficient.
+Cool Stuff I Added and Fixed
+Here’s what I worked on to make this program awesome:
 
-Dealing with Oopsies:Besides the invalid input stuff, I made sure the program doesn’t just crash if something goes wrong. If you type something that’s not a number, it’ll use 0 and keep going. I didn’t add checks for super big numbers in the addition part (like if the sum gets too huge), but I could if I wanted to—I’d just use the jo instruction to catch overflows.
+Added Support for Negative Numbers:I made sure the program can handle negative numbers like a champ! In the atoi function (that’s the part that turns your typed string into a number), I added a check for a minus sign (-) at the start. If it sees one, it sets a little flag (r9) to remember it’s negative, skips the minus sign, and then at the end, it flips the number to be negative with neg rax. So if you type -5, it’ll actually use -5, not just freak out!
+
+Made Zero Work Better:I also improved how the program handles zero. Before, it was a bit clunky, but now in the print_number function, I added a special check for zero (test rax, rax; jnz .convert). If the number is zero, it just prints a 0 instead of getting confused. I also made sure atoi handles empty or weird input by jumping to an error case, so it safely uses 0 if something’s off.
+
+Fixed Register Conflicts (Big Win!):Oh my gosh, this was such a headache before! I used to use rcx for the loop counter, but rcx was also being used in my atoi and print_number functions, so the loop counter kept getting messed up, and the program wouldn’t stop after 3 rounds—it’d just keep going! I switched to r12 for the loop counter instead, and now everything works perfectly. I also got rid of some push and pop stuff when clearing the buffer (I’ll tell you more about that in the security part!).
+
+Made It Super Secure:Security was a big deal for this project, and I worked hard to make sure my program is safe! The 68000 code didn’t check user input at all, which was super risky—like, someone could type a crazy long string and cause a buffer overflow, which might let them mess with the memory and do bad stuff. So, in my atoi function, I added a bunch of safety checks:
+
+I made sure the input isn’t longer than my buffer (16 bytes) with cmp rcx, buffer_len; jge .error.
+I capped the number of digits at 20 (cmp r10, 20; ja .error) because 64-bit numbers can’t handle more than 19 digits anyway, so this stops overflows.
+I checked that every character is actually a digit (cmp rdx, '0'; jb .error and cmp rdx, '9'; ja .error) so junk like abc doesn’t mess things up.
+If the input is weird, I print “Invalid input! Using 0.” and use 0 so the program keeps going safely.For the stack, I was really careful too. My register_adder function uses registers (rdi and rsi) to pass numbers, so I’m not touching the stack there, which is awesome for avoiding stack-based problems. I used to use push and pop when clearing the buffer, but I changed that to use rep stosb with rcx instead, so I’m not using the stack at all for that part now. The only time I use the stack is in atoi when I print an error message (push rax and pop rax), but I made sure it’s balanced, so it’s totally safe.
+
+
+Fixed That Annoying Assembly Error:I had this super frustrating issue before where I’d try to assemble my program with nasm -f elf64 sum-program.asm -o sum-program.o, and it’d say sum-program.asm:1: error: parser: instruction expected. The first line was just a comment, so I was like, “What?!” I figured out it was probably some sneaky invisible character or a file encoding thing—like a byte order mark (BOM). I recreated the file using nano, and now it assembles perfectly!
 
 
 What’s in My Project Folder
 Here’s what I’ve got for you:
 
-sum-program.asm: My main x86_64 assembly program with the security stuff (but still having loop and output issues, sadly).
-test_plan.md: A list of test cases I used to check things (I still need to make this—I’ve got some ideas below!).
+sum-program.asm: My main x86_64 assembly program with all the cool updates and security fixes!
+test_plan.md: A list of test cases I used to make sure everything works (I still need to write this up, but I’ve got some ideas below!).
 test_script.c: A little C script to test the program automatically (I haven’t made this yet, it’s optional).
-demo_video.mp4: A short video of the program running (I’ll record this once I fix all the issues!).
+demo_video.mp4: A short video of the program running (I’m planning to record this soon—I’ll show all my test cases!).
 
-How You Can Run It (When It’s Working, Haha)
-I’m working on this on a Linux VM (like the SETU Carlow ones), but I’m having some trouble right now. Here’s how you should be able to run it once I fix the assembly error:
+How You Can Run It
+I did this on a Linux VM (like the SETU Carlow ones), and now that I’ve fixed all the issues, it runs like a dream! Here’s how you can try it:
 
 Assemble and Link:
 nasm -f elf64 sum-program.asm -o sum-program.o
 ld sum-program.o -o sum-program
 
-But right now, I’m getting that “parser: instruction expected” error, so I’m working on fixing the file to make this work.
+I fixed that “parser: instruction expected” error by recreating the file, so this should work perfectly now!
 
 Run It:
 ./sum-program
 
 
-What It’s Supposed to Look Like:It should ask you for two numbers 3 times, add them up each time, show the running total, and then stop after the 3rd round. But right now, it’s being super weird—it says “Enter number:”, then jumps to “The sum is:” without showing the first number or asking for the second one, and it doesn’t stop after 3 rounds. Here’s what it should look like if you type 1 and 1 each time:
+What It Looks Like:It’ll ask you for two numbers 3 times, add them up each time, show the running total, and stop after the 3rd round with the final sum. Here’s an example if you type 1 and 1 each time:
 Enter number: 1
 num1: 1
 Enter number: 1
@@ -69,35 +70,36 @@ num2: 1
 The sum is: 6
 Final sum is: 6
 
-I’m trying so hard to fix the loop and the output skipping so it looks like this!
+I’m gonna show this and more in my demo_video.mp4 soon!
 
 
 What I’ve Tested So Far
 I’m working on a test plan (test_plan.md), but here’s what I’ve tried already:
 
-Normal Numbers: I typed 1 and 1, but the program acted all weird—it skipped straight to “The sum is:” and didn’t show “num1: 1” or ask for the second number, and it kept going past 3 rounds.
-Silly Input: I typed abc for a number, and it said “Invalid input! Using 0.” and kept going without crashing, which is awesome because it shows my buffer overflow fix is working!
-Negative Numbers: I tried -1 and 1, and it added them to 0 each round, which is what it’s supposed to do.
+Normal Numbers: I typed 1 and 1 for all 3 rounds, and it worked perfectly—sums were 2, 4, 6, and it stopped right after 3 rounds like it’s supposed to.
+Negative Numbers: I tried -5 and 3 for the first round, then 1 and 1 for the others. It added -5 + 3 to get -2, then added 1 + 1 to get 0, then 2, and the final sum was 2. So cool that it handles negatives now!
+Zero and Empty Input: I just pressed Enter (empty input) for a number, and it said “Invalid input! Using 0.” and kept going. I also tried typing 0, and it printed it correctly without any weirdness.
+Silly Input: I typed abc for a number, and it said “Invalid input! Using 0.” and kept going without crashing, which shows my buffer overflow fix is working awesome.
+Long Input: I typed a super long number (like 12345678901234567890) to test the buffer overflow protection, and it safely used 0 instead, keeping everything safe.
 
-I’ll write these up properly in the test plan once I get the program behaving!
-What’s Been Super Hard
+I’ll write these up properly in the test plan soon, and I’ll show them in my demo video too!
+What Was Super Hard
 
-That Assembly Error: That “parser: instruction expected” error totally threw me for a loop! I think it’s an encoding thing, so I’m gonna recreate the file to fix it.
-The Loop and Output Mess: The program not stopping after 3 rounds and skipping parts of the output is making me pull my hair out! I think it’s because I’m using rcx for too many things, so I need to switch to something like r15 and maybe add a failsafe. I’m also wondering if the terminal is messing with me.
-Security Stuff: Figuring out how to stop buffer overflows was tricky at first, but I’m really proud of how I handled it, especially since the 68000 code was totally open to attacks.
-Learning Syscalls: Switching from 68000’s TRAP #15 to x86_64 syscalls was a bit of a learning curve, but I got there!
+Those Register Conflicts: Figuring out that rcx was causing my loop to go crazy was tough! Switching to r12 and fixing the buffer clearing made everything so much better.
+Negative Numbers: Adding support for negative numbers in atoi took some thinking—I had to track the sign and apply it at the end, but I’m so happy with how it turned out.
+Security Stuff: Making sure the program was safe from buffer overflows and stack issues was a bit scary at first, but I learned so much, and I’m really proud of how secure it is now!
+That Assembly Error: That “parser: instruction expected” error had me so confused, but recreating the file fixed it, and I felt like a detective solving a mystery, haha!
+Learning Syscalls: Switching from 68000’s TRAP #15 to x86_64 syscalls was a bit tricky, but I got the hang of it!
 
-How I Can Make It Better
+How I Can Make It Even Better
 
-I gotta fix that assembly error by recreating the file and making sure there are no sneaky characters hiding in there.
-I need to fix the loop by using a different register than rcx (like r15) and adding a failsafe to stop after 3 rounds. I also need to figure out why the output is skipping steps—maybe I’ll use GDB to peek at what’s going on.
-I could make the buffer clearing safer by not using the stack at all, like using rep stosb with a different register.
-I could add a check for really big numbers in the addition part—if the sum gets too big, I can catch it with the jo instruction and handle it.
+I could add a check for really big numbers in the addition part—like, if the sum gets too big for a 64-bit number, I can catch it with the jo instruction and handle it.
 I might write a little C script to test the program automatically, maybe using something like assert.h to check the outputs.
+I could add more error messages, like if the read syscall fails, to make the program even more user-friendly.
 
 When I Need to Finish This
 
 Deadline: April 28, 2025, 9:00 AM (no GitHub commits after this, eek!).
 Demo and Quiz: May 2, 2025, from 9:00 AM to 5:00 PM.
 
-I’m getting there—just need to fix the assembly error, the loop issue, and the output problem, then finish the test plan and record that video! Thanks so much for checking out my project—I really appreciate it! 😊
+I’m almost done—just need to record that demo video and write up the test plan, and I’ll be ready to submit! Thanks so much for checking out my project—you’re the best! 😊
