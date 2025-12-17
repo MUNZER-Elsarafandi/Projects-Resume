@@ -4,9 +4,6 @@
 ---------------------------------------------
 
 Name : Munzer Elsarafandi
-ID   : C00281934
-Date : 25/11/2025
-Course: Cryptography
 
 ---------------------------------------------
 
@@ -37,9 +34,6 @@ automatically generates the CSV output files inside the 'results/' directory.
 ---------------------------------------------
 Benchmark System Specification:
 
-CPU      : AMD Ryzen 9 5900X
-RAM      : 32GB DDR4 4000 MHz
-GPU      : NVIDIA RTX 2080
 OS       : Windows 10
 Python   : 3.12.6
 Package  : cryptography 46.0.3
@@ -571,3 +565,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
